@@ -1,0 +1,5 @@
+loadbin build\f407g-ethernet.bin, 0x00
+verifybin build\f407g-ethernet.bin, 0x00
+r
+g
+q

@@ -1,0 +1,12 @@
+{
+	//"cortex-debug.armToolchainPath": "C:/Program Files (x86)/Microsoft Visual Studio/2017/Professional/Linux/gcc_arm/bin",
+	"cortex-debug.enableTelemetry": false,
+	"cortex-debug.JLinkGDBServerPath": "JLinkGDBServerCL.exe",
+	"files.associations": {
+		"gpio.h": "c",
+		"rcc.h": "c",
+		"freertos.h": "c",
+		"freertosconfig.h": "c",
+		"task.h": "c"
+	}
+}

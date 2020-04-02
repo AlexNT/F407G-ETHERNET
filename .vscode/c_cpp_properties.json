@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "arm_c_cpp_properties",
+            "compilerPath": "c:/SEGGER/gnu-gcc/",
+            "includePath": [
+                "${workspaceRoot}/inc"
+             ],
+        "defines": [
+            "STM32F4",
+            "DEBUG"
+		],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+			"intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}

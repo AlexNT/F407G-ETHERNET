@@ -1,0 +1,69 @@
+{
+    "version": "2.0.0",
+	"tasks": 
+	[
+        {
+            "taskName": "Makefile",
+            "command": "make -s -j 4 all",
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "isShellCommand": true,
+            "isBuildCommand": true,
+            "showOutput": "always",
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceRoot}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "taskName": "Make Clean",
+            "command": "make",
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "isShellCommand": true,
+            "isBuildCommand": true,
+            "showOutput": "always",
+            "args": [
+                "clean"
+            ],
+            "problemMatcher": [],
+        },
+        {
+            "taskName": "Write to Flash MCU",
+            "command": "JLink.exe -Device STM32F407VG -If SWD -Speed 1000 JLink\\FlashMCU.jlink",
+            "isShellCommand": true,
+            "isBuildCommand": true,
+            "showOutput": "always",
+            "problemMatcher": [],
+            "group": {
+                "kind": "f407g-ethernet",
+                "isDefault": true
+            }
+        },
+        {
+            "taskName": "Erase flash",
+            "command": "JLink.exe -Device STM32F407VG -If SWD -Speed 1000 JLink\\EraseMCU.jlink",
+            "isShellCommand": true,
+            "isBuildCommand": true,
+            "showOutput": "always",
+            "problemMatcher": []
+        }
+    ]
+}
