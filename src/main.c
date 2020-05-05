@@ -1,127 +1,102 @@
-/* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx.h"
+#include "stm32f4_discovery.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "stm32f4x7_eth_bsp.h"
+
+#include "http_server.h"
+
+void vTaskLED1(void *pvParameters) {
+    for (;;) {
+        STM_EVAL_LEDToggle(LED3);
+        vTaskDelay(500);
+    }
+}
+
+void vTaskLED2(void *pvParameters) {
+    for (;;) {
+        STM_EVAL_LEDToggle(LED4);
+        vTaskDelay(321);
+    }
+}
+
+#include "lwip/mem.h"
+#include "lwip/memp.h"
+#include "lwip/dhcp.h"
+#include "ethernetif.h"
 #include "main.h"
-#include "lwip.h"
-#include "net.h"
+#include "tcpip.h"
+#include "netif.h"
+#include <stdio.h>
 
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
+struct netif xnetif; /* network interface structure */
 
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
+void LwIP_Init(void)
 {
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+  ip_addr_t ipaddr;
+  ip_addr_t netmask;
+  ip_addr_t gw;
 
-  /* Configure the system clock */
-  SystemClock_Config();
+  /* Create tcp_ip stack thread */
+  tcpip_init( NULL, NULL );	
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_LWIP_Init();
-  tcp_server_init();
+  /* IP address setting & display on STM32_evalboard LCD*/
+#ifdef USE_DHCP
+  ipaddr.addr = 0;
+  netmask.addr = 0;
+  gw.addr = 0;
+#else
+  IP4_ADDR(&ipaddr, IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
+  IP4_ADDR(&netmask, NETMASK_ADDR0, NETMASK_ADDR1 , NETMASK_ADDR2, NETMASK_ADDR3);
+  IP4_ADDR(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
+#endif
 
-  while (1)
-  {
-      MX_LWIP_Process();
-  }
+  /* - netif_add(struct netif *netif, struct ip_addr *ipaddr,
+            struct ip_addr *netmask, struct ip_addr *gw,
+            void *state, err_t (* init)(struct netif *netif),
+            err_t (* input)(struct pbuf *p, struct netif *netif))
+    
+   Adds your network interface to the netif_list. Allocate a struct
+  netif and pass a pointer to this structure as the first argument.
+  Give pointers to cleared ip_addr structures when using DHCP,
+  or fill them with sane numbers otherwise. The state pointer may be NULL.
+
+  The init function pointer must point to a initialization function for
+  your ethernet netif interface. The following code illustrates it's use.*/
+
+  netif_add(&xnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
+
+ /*  Registers the default network interface. */
+  netif_set_default(&xnetif);
+
+ /*  When the netif is fully configured this function must be called.*/
+  netif_set_up(&xnetif); 
 }
 
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
+
+int main()
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    STM_EVAL_LEDInit(LED3);
+    STM_EVAL_LEDInit(LED4);
+    STM_EVAL_LEDInit(LED5);
+    
+    /* configure Ethernet (GPIOs, clocks, MAC, DMA) */ 
+    ETH_BSP_Config();
 
-  /** Configure the main internal regulator output voltage 
-  */
-  __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 168;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+    /* Initilaize the LwIP stack */
+    LwIP_Init();
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    /* Initialize webserver demo */
+    //http_server_netconn_init();
+
+        
+    xTaskCreate(vTaskLED1, "LED1", configMINIMAL_STACK_SIZE, NULL, 2, ( TaskHandle_t * ) NULL);
+    xTaskCreate(vTaskLED2, "LED2", configMINIMAL_STACK_SIZE, NULL, 2, ( TaskHandle_t * ) NULL);
+
+    xTaskCreate(http_server_netconn_thread, "HTTP", configMINIMAL_STACK_SIZE, NULL, 2, ( TaskHandle_t * ) NULL);
+
+    vTaskStartScheduler();
+    return 0;
 }
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, LED3_Pin|LED4_Pin|LED5_Pin|LED6_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : LED3_Pin LED4_Pin LED5_Pin LED6_Pin */
-  GPIO_InitStruct.Pin = LED3_Pin|LED4_Pin|LED5_Pin|LED6_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-}
-
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  /* User can add his own implementation to report the HAL error return state */
-}
-
-#ifdef  USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t *file, uint32_t line)
-{ 
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
-}
-#endif /* USE_FULL_ASSERT */
