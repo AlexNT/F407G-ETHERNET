@@ -43,6 +43,7 @@ $(MAIN_SOURCE_DIR)/http_server.c\
 $(MAIN_SOURCE_DIR)/stm32f4_discovery.c \
 $(MAIN_SOURCE_DIR)/stm32f4x7_eth_bsp.c \
 $(MAIN_SOURCE_DIR)/stm32f4xx_it.c \
+$(MAIN_SOURCE_DIR)/ethernetif.c \
 $(ETH_DIR)/src/stm32f4x7_eth.c \
 $(STD_DIR)/src/misc.c \
 $(STD_DIR)/src/stm32f4xx_rcc.c \
@@ -83,7 +84,6 @@ $(LwIP_DIR)/src/core/timers.c \
 $(LwIP_DIR)/src/core/udp.c \
 $(LwIP_DIR)/src/netif/etharp.c \
 $(LwIP_DIR)/src/netif/slipif.c \
-$(LwIP_DIR)/port/ethernetif.c \
 $(LwIP_DIR)/port/sys_arch.c \
 $(CMSIS_DIR)/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c \
 $(FREERTOS_DIR)/croutine.c \
@@ -91,7 +91,6 @@ $(FREERTOS_DIR)/event_groups.c \
 $(FREERTOS_DIR)/list.c \
 $(FREERTOS_DIR)/queue.c \
 $(FREERTOS_DIR)/tasks.c \
-$(FREERTOS_DIR)/timers.c \
 $(FREERTOS_DIR)/portable/GCC/ARM_CM4F/port.c \
 $(FREERTOS_DIR)/portable/MemMang/heap_4.c \
 $(SEGGER_DIR)/SEGGER/SEGGER_RTT.c \
@@ -148,7 +147,8 @@ C_DEFS =  \
 -DHSE_VALUE=8000000 
 
 # AS includes
-AS_INCLUDES = 
+AS_INCLUDES = \
+-IInc
 
 # C includes
 C_INCLUDES =  \
