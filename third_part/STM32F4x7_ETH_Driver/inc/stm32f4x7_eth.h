@@ -47,8 +47,14 @@
  extern "C" {
 #endif
 
+#include "main.h"
+
+typedef uint16_t u16;
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4x7_eth_conf.h"
+
+typedef uint32_t  u32;
 
 /** @addtogroup STM32F4x7_ETH_Driver
   * @{
@@ -61,7 +67,7 @@
 /** 
   * @brief  ETH MAC Init structure definition
   * @note   The user should not configure all the ETH_InitTypeDef structure's fields. 
-  *   By calling the ETH_StructInit function the structure’s fields are set to their default values.
+  *   By calling the ETH_StructInit function the structureï¿½s fields are set to their default values.
   *   Only the parameters that will be set to a non-default value should be configured.  
   */ 
 typedef struct {

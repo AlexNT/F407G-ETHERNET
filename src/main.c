@@ -6,7 +6,13 @@
 
 #include "stm32f4x7_eth_bsp.h"
 
-#include "http_server.h"
+#include "lwip/opt.h"
+#include "lwip/arch.h"
+#include "lwip/api.h"
+#include <string.h>
+#include <stdio.h>
+
+void LwIP_Init(void);
 
 void vTaskLED1(void *pvParameters) {
     for (;;) {
@@ -19,6 +25,54 @@ void vTaskLED2(void *pvParameters) {
     for (;;) {
         STM_EVAL_LEDToggle(LED4);
         vTaskDelay(321);
+    }
+}
+
+void vNetTask(void *pvParameters) {
+  struct netconn * nc = (struct netconn *)pvParameters;
+  struct netbuf * nb;
+  char * buffer = pvPortMalloc(256);
+  uint16_t len;
+  sprintf(buffer, "Hello from STM32F407VG!\r\n");
+  netconn_write(nc,buffer,strlen(buffer), NETCONN_COPY);
+  for (;;) {
+    netconn_recv(nc, &nb);
+    len = netbuf_len(nb);
+    netbuf_copy(nb, buffer, len);
+    netbuf_delete(nb);
+    buffer[len] = 0;
+    sprintf(buffer, "%s",buffer);
+    netconn_write(nc,buffer,strlen(buffer), NETCONN_COPY);
+    vTaskDelay(1);
+  }
+}
+
+void vTaskDef(void *pvParameters) {
+    struct netconn * nc;
+    struct netconn * in_nc;
+    volatile err_t res;
+  /* Initilaize the LwIP stack */
+    LwIP_Init();
+    nc = netconn_new(NETCONN_TCP);
+    if(nc == NULL)
+    {
+      while(1) vTaskDelay(1);
+    }
+    res = netconn_bind(nc, IP_ADDR_ANY, 2000);      
+    if(res != 0)
+    {
+      while(1) vTaskDelay(1);
+    }
+    res = netconn_listen(nc);
+    if(res != 0)
+    {
+      while(1) vTaskDelay(1);
+    }
+    for (;;) {
+        res = netconn_accept(nc, &in_nc);
+        STM_EVAL_LEDToggle(LED5);
+        xTaskCreate(vNetTask, "NetTask", configMINIMAL_STACK_SIZE, (void*)in_nc, 2, ( TaskHandle_t * ) NULL);
+        vTaskDelay(1);
     }
 }
 
@@ -85,17 +139,10 @@ int main()
     /* configure Ethernet (GPIOs, clocks, MAC, DMA) */ 
     ETH_BSP_Config();
 
-    /* Initilaize the LwIP stack */
-    LwIP_Init();
-
-    /* Initialize webserver demo */
-    //http_server_netconn_init();
-
-        
+       
     xTaskCreate(vTaskLED1, "LED1", configMINIMAL_STACK_SIZE, NULL, 2, ( TaskHandle_t * ) NULL);
     xTaskCreate(vTaskLED2, "LED2", configMINIMAL_STACK_SIZE, NULL, 2, ( TaskHandle_t * ) NULL);
-
-    xTaskCreate(http_server_netconn_thread, "HTTP", configMINIMAL_STACK_SIZE, NULL, 2, ( TaskHandle_t * ) NULL);
+    xTaskCreate(vTaskDef, "TaskDef", configMINIMAL_STACK_SIZE, NULL, 2, ( TaskHandle_t * ) NULL);
 
     vTaskStartScheduler();
     return 0;

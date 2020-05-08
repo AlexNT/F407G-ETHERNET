@@ -1093,7 +1093,7 @@ snmp_expand_tree(struct mib_node *node, u8_t ident_len, s32_t *ident, struct snm
       else
       {
         /* tree ends here ... */
-        LWIP_DEBUGF(SNMP_MIB_DEBUG,("expand failed, tree ends here/n"));
+        LWIP_DEBUGF(SNMP_MIB_DEBUG,("expand failed, tree ends here\n"));
         return NULL;
       }
     }
