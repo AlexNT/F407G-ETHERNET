@@ -54,7 +54,6 @@ $(FREERTOS_DIR)/event_groups.c \
 $(FREERTOS_DIR)/list.c \
 $(FREERTOS_DIR)/queue.c \
 $(FREERTOS_DIR)/tasks.c \
-$(FREERTOS_DIR)/timers.c \
 $(FREERTOS_DIR)/portable/MemMang/heap_4.c \
 $(FREERTOS_DIR)/portable/GCC/ARM_CM4F/port.c \
 $(LwIP_DIR)/src/netif/ppp/auth.c \
@@ -171,7 +170,6 @@ C_INCLUDES =  \
 -I$(LwIP_DIR)/port/include/arch \
 -I$(LwIP_DIR)/src/include \
 -I$(LwIP_DIR)/src/include/ipv4 \
--I$(LwIP_DIR)/src/include/lwip \
 -I$(LwIP_DIR)/src/include/netif \
 -I$(SEGGER_DIR)/SEGGER \
 -I$(SEGGER_DIR)/config 

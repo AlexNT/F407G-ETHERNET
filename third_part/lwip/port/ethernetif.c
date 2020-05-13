@@ -49,7 +49,7 @@
 #include "lwip/pbuf.h"
 #include "lwip/sys.h"
 #include "netif/etharp.h"
-#include "err.h"
+#include "lwip/err.h"
 #include "ethernetif.h"
 #include "lwip/timers.h"
 

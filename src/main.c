@@ -81,8 +81,8 @@ void vTaskDef(void *pvParameters) {
 #include "lwip/dhcp.h"
 #include "ethernetif.h"
 #include "main.h"
-#include "tcpip.h"
-#include "netif.h"
+#include "lwip/tcpip.h"
+#include "lwip/netif.h"
 #include <stdio.h>
 
 struct netif xnetif; /* network interface structure */
